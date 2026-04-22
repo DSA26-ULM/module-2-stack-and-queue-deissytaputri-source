@@ -13,7 +13,7 @@ bool isEmpty(const Queue* q) {
 }
 
 bool isFull(const Queue* q) {
-    return q->rear == &q->data[MAX - 1];
+    return !isEmpty(q) && q->rear == &q->data[MAX - 1];
 }
 
 void enqueue(Queue* q, int value) {
@@ -39,9 +39,16 @@ void dequeue(Queue* q) {
     if (q->front == q->rear) {
         q->front = nullptr;
         q->rear = nullptr;
-    } else {
-        q->front++;
+        return;
     }
+
+    int* current = q->front;
+    while (current < q->rear) {
+        *current = *(current + 1);
+        current++;
+    }
+
+    q->rear--;
 }
 
 int front(const Queue* q) {
