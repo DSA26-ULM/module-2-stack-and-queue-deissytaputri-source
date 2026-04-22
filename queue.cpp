@@ -13,22 +13,38 @@ bool isEmpty(const Queue* q) {
 }
 
 bool isFull(const Queue* q) {
-    return !isEmpty(q) && q->rear == &q->data[MAX - 1];
+    return !isEmpty(q) && q->front == &q->data[0] && q->rear == &q->data[MAX - 1];
 }
 
 void enqueue(Queue* q, int value) {
-    if (isFull(q)) {
-        throw overflow_error("Queue penuh");
-    }
-
     if (isEmpty(q)) {
         q->front = &q->data[0];
         q->rear = &q->data[0];
-    } else {
-        q->rear++;
+        *q->rear = value;
+        return;
     }
 
-    *(q->rear) = value;
+    if (q->rear == &q->data[MAX - 1]) {
+        if (q->front == &q->data[0]) {
+            throw overflow_error("Queue penuh");
+        }
+
+        int* dest = &q->data[0];
+        int* src = q->front;
+
+        while (src <= q->rear) {
+            *dest = *src;
+            dest++;
+            src++;
+        }
+
+        int count = q->rear - q->front + 1;
+        q->front = &q->data[0];
+        q->rear = &q->data[count - 1];
+    }
+
+    q->rear++;
+    *q->rear = value;
 }
 
 void dequeue(Queue* q) {
@@ -39,16 +55,9 @@ void dequeue(Queue* q) {
     if (q->front == q->rear) {
         q->front = nullptr;
         q->rear = nullptr;
-        return;
+    } else {
+        q->front++;
     }
-
-    int* current = q->front;
-    while (current < q->rear) {
-        *current = *(current + 1);
-        current++;
-    }
-
-    q->rear--;
 }
 
 int front(const Queue* q) {
@@ -56,7 +65,7 @@ int front(const Queue* q) {
         throw underflow_error("Queue kosong");
     }
 
-    return *(q->front);
+    return *q->front;
 }
 
 int back(const Queue* q) {
@@ -64,5 +73,5 @@ int back(const Queue* q) {
         throw underflow_error("Queue kosong");
     }
 
-    return *(q->rear);
+    return *q->rear;
 }
